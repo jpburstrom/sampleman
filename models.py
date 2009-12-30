@@ -219,7 +219,13 @@ class SoundfileModel(QtGui.QStandardItemModel):
                 return q.all()
             t = t.split("=")
             if len(t) is 1:
-                q = q.join("tags", aliased=True).filter(Tag.name==t[0].lower())
+                #FIXME: name & tag (& desc) i fritextsök, specificera med prefix.
+                q = q.join("tags", aliased=True).filter(
+                            #Soundfile.file_path.like(u"%{0}%".format(t[0])),
+                            Tag.name==t[0].lower()
+                            )
+            elif t[0].lower() in ("name", "n") :
+                q = q.filter(Soundfile.file_path.like(u"%{0}%".format(t[1])))
             elif t[0].lower() in ("desc", "d") :
                 q = q.filter(Soundfile.desc.like(u"%{0}%".format(t[1])))
             elif t[0].lower() in ("channels", "c"):
@@ -252,17 +258,26 @@ class TagModel(QtGui.QStandardItemModel):
             self.appendRow(QtGui.QStandardItem(t.name.capitalize()))
 
 class RepoModel(QtGui.QStandardItemModel):
+    """Repository paths list model."""
+
     def __init__(self, *args):
         QtGui.QStandardItemModel.__init__(self, *args)
         
         self.reload()
 
     def reload(self):
+        """Query repos and redraw gui.
+
+        """
         for t in Repo.query.all():
             self.appendRow((QtGui.QStandardItem(t.path), QtGui.QStandardItem(), QtGui.QStandardItem()))
 
     def add_repo(self, path):
-        """Add repository to database"""
+        """Add repository to database.
+        
+        """
+        #TODO: No need to check all paths. Also stupid to return existing repo in an add_repo method.
+        #Pröva så här: Kolla main path, om den redan finns, returnera None. Annars returnera Repo. Eller?
         try:
             return Repo.query.filter(or_(
                 Repo.path==path, 
@@ -275,12 +290,22 @@ class RepoModel(QtGui.QStandardItemModel):
         #XXX session.commit()
 
     def delete_repo(self, path):
-        """Delete repository including soundfiles from database."""
+        """Delete repository including soundfiles from database.
+        
+        """
         #[session.delete(sf) for sf in Soundfile.query.join("repo").filter(Repo.path == path).all()]
         session.delete(Repo.query.filter_by(path=path).one())
-        #FIXME get model index
+        #FIXME get model index and remove corresponding row in treeeeeeeVieeeeeew.
         #self.removeRow(mi.row())
         #XXX session.commit()
+
+    def edit_repo(self, oldpath, newpath, col=0):
+        """Edit repository path.
+
+        Find oldpath in col (where 0=path, 1=altpath1...) and set it to newpath.
+        """
+        print "Not implemented"
+        #TODO
 
     def scan_repo(self, repo, rescan=False):
         """Scan repository for new files

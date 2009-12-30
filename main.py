@@ -12,7 +12,11 @@ from mainwindowui import Ui_MainWindow
 from filewidgetui import Ui_Dialog
 from pathdialogui import Ui_PathDialog
 
+#TODO: .sampleman dir/file in each repository w/ sound metadata
+
 class PathDialog(QtGui.QDialog):
+    """Soundfile repository editor."""
+
     def __init__(self, *args):
         QtGui.QDialog.__init__(self, *args)
 
@@ -21,12 +25,21 @@ class PathDialog(QtGui.QDialog):
         
         self.repomodel = RepoModel(self)
         self.ui.treeView.setModel(self.repomodel)
+        self.ui.treeView.resizeColumnToContents(0)
+
 
         #Setup data
         self.connect(self.ui.buttonAdd, SIGNAL("clicked()"), self.addRepo)
         self.connect(self.ui.buttonDelete, SIGNAL("clicked()"), self.deleteRepo)
+        self.connect(self.ui.buttonRescan, SIGNAL("clicked()"), self.rescanRepo)
+        self.connect(self.ui.buttonEdit, SIGNAL("clicked()"), self.editRepo)
+
+        #TODO: deactivate delete/rescan when item is not selected
 
     def addRepo(self):
+        """Add new repository.
+
+        """
         path = QtGui.QFileDialog.getExistingDirectory(self, "Add a repository", os.path.expanduser("~"))
         repo = self.repomodel.add_repo(unicode(path))
         if QtGui.QMessageBox.question(
@@ -38,10 +51,15 @@ class PathDialog(QtGui.QDialog):
 
 
     def deleteRepo(self):
+        """Delete selected repository.
+
+        """
+        #TODO : dialog box choosing btwn deleting single path and deleting entire repo
         if QtGui.QMessageBox.question(
                 self, "Are you sure?", "Delete repository and soundfile data? (This will not remove them from your filesystem)",
                 QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok, QtGui.QMessageBox.Cancel ) == QtGui.QMessageBox.Ok:
             for mi in self.ui.treeView.selectedIndexes():
+                #FIXME: set column to 0 and find path
                 if mi.column() == 0:
                     path = mi.data().toString()
                     break
@@ -49,9 +67,37 @@ class PathDialog(QtGui.QDialog):
             self.parent().rebuild()
             session.commit()
 
+    def rescanRepo(self):
+        """Rescan selected repository.
+
+        """
+        for mi in self.ui.treeView.selectedIndexes():
+            #FIXME: set column to 0 and find path
+            if mi.column() == 0:
+                path = mi.data().toString()
+                break
+        repo = Repo.get_by(path=unicode(path))
+        self.repomodel.scan_repo(repo)
+
+    def editRepo(self):
+        """Edit repository paths.
+        
+        """
+        mi = self.ui.treeView.selectedIndexes()[0]
+        #FIXME
+        #Get repo 
+        #find item to edit
+        #... (model stuff really)
+
 
 class MyDialog(QtGui.QDialog):
+    """Soundfile attributes edit dialog."""
+
     def __init__(self, repo, path, *args):
+        """Constructor.
+
+        """
+
         QtGui.QDialog.__init__(self, *args)
 
         sf = Soundfile.get_from_paths(unicode(repo), unicode(path))
@@ -81,10 +127,14 @@ Length\t\t{5} s ({6} samples) """.format(
         self.connect(self, SIGNAL("accepted()"), self.on_accept)
 
     def on_accept(self):
-        """Docstring"""
+        """Commit edits.
+        
+        """
+
         self.sf.tagstring = unicode(self.ui.lineEditTags.text()).lower()
         self.sf.desc = unicode(self.ui.textEditDescription.toPlainText())
         session.commit()
+
 
 class MyWindow(QtGui.QMainWindow):
     def __init__(self, *args):
@@ -105,11 +155,15 @@ class MyWindow(QtGui.QMainWindow):
         #self.ui.tagView.setRootIndex(0)
 
     def on_tagView_click(self, mi):
+        """Append selected tags to search."""
+
         f = QtCore.QString()
         [f.append(unicode(mi.data().toString())).append(", ") for mi in self.ui.tagView.selectedIndexes()]
         self.ui.lineEdit.setText(f)
 
     def on_fileView_doubleClick(self, mi):
+        """Open file dialog."""
+
         d = MyDialog(
                 self.filemodel.index(mi.row(), 1).data().toString(),
                 self.filemodel.index(mi.row(), 0).data().toString()
@@ -119,18 +173,33 @@ class MyWindow(QtGui.QMainWindow):
             self.filemodel.rebuild()
 
     def on_lineEdit_textChanged(self, s):
+        """Check if current string calls for a new search.
+        
+        """
+
         if s.trimmed().endsWith(","):
             self.start_search()
 
     def manage_folders(self):
+        """Open repository dialog.
+        
+        """
+
         d = PathDialog(self)
         d.show()
 
     def start_search(self):
+        """Make list from searchbox, and start search.
+
+        """
+
         searches = [t.strip() for t in unicode(self.ui.lineEdit.text()).split(",") if t.strip()]
         self.filemodel.search(searches)
+        self.ui.fileView.resizeColumnToContents(0)
 
     def rebuild(self):
+        """Expensive redo-search-and-redraw-all method."""
+
         self.filemodel.rebuild()
         self.tagmodel.reload()
 
@@ -139,5 +208,5 @@ initDB()
 app = QtGui.QApplication(sys.argv)
 w = MyWindow()
 w.show()
-w.manage_folders()
+#w.manage_folders()
 sys.exit(app.exec_())

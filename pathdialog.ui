@@ -14,30 +14,20 @@
    <string>Repositories</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="2">
-    <widget class="QPushButton" name="buttonDelete">
-     <property name="text">
-      <string>Delete</string>
+   <item row="0" column="0" colspan="5">
+    <widget class="QTreeView" name="treeView">
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
      </property>
-     <property name="autoDefault">
-      <bool>false</bool>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectItems</enum>
      </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QPushButton" name="buttonAdd">
-     <property name="text">
-      <string>Add</string>
-     </property>
-     <property name="autoDefault">
-      <bool>false</bool>
-     </property>
-     <property name="default">
-      <bool>true</bool>
+     <property name="indentation">
+      <number>0</number>
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
+   <item row="2" column="1">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -50,8 +40,39 @@
      </property>
     </spacer>
    </item>
-   <item row="0" column="0" colspan="3">
-    <widget class="QTreeView" name="treeView"/>
+   <item row="2" column="0">
+    <widget class="QPushButton" name="buttonAdd">
+     <property name="text">
+      <string>Add...</string>
+     </property>
+     <property name="autoDefault">
+      <bool>false</bool>
+     </property>
+     <property name="default">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="4">
+    <widget class="QPushButton" name="buttonRescan">
+     <property name="text">
+      <string>Rescan</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QPushButton" name="buttonEdit">
+     <property name="text">
+      <string>Edit...</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="3">
+    <widget class="QPushButton" name="buttonDelete">
+     <property name="text">
+      <string>Delete</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
