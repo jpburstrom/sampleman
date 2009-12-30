@@ -1,0 +1,17 @@
+Sampleman is a simple sound browser/database.
+
+Requirements
+============
+
+PyQt4, http://www.riverbankcomputing.com/
+Elixir, http://elixir.ematia.de/
+Audiolab, http://www.ar.media.kyoto-u.ac.jp/members/david/softwares/audiolab/
+
+(
+just do 
+easy_install pyqt elixir scikits.audiolab
+)
+
++ some more for wavpack and mp3 support (todo)
+
+Copyright 2009-2010 Johannes Burström. GNU GPL v3.
