@@ -199,7 +199,7 @@ class SoundfileModel(QtGui.QStandardItemModel):
         all: If True, also search among inactive sounds
 
         Terms examples:
-        (foo, fum): Search files with tags foo and fum
+        (foo, fum): Search files for content in tags, filename and description
         (desc=Blah,): Search files with description containing "Blah"
         (f=wav,): Search files in wav format
 
@@ -209,6 +209,8 @@ class SoundfileModel(QtGui.QStandardItemModel):
         file_format/f = File format
         encoding/e = Encoding
         samplerate/s = Samplerate
+        tag/t = tag
+        name/n = filename
 
         More search terms to come, if needed...
         """
@@ -220,6 +222,8 @@ class SoundfileModel(QtGui.QStandardItemModel):
             t = t.split("=")
             if len(t) is 1:
                 #FIXME: name & tag (& desc) i fritextsök, specificera med prefix.
+                #TODO: For later: user settings for free search.
+                #TODO: Here, the searches are ANDed. Would be good to have an OR as well.
                 q = q.join("tags", aliased=True).filter(
                             #Soundfile.file_path.like(u"%{0}%".format(t[0])),
                             Tag.name==t[0].lower()

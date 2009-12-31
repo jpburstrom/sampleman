@@ -12,7 +12,17 @@ from mainwindowui import Ui_MainWindow
 from filewidgetui import Ui_Dialog
 from pathdialogui import Ui_PathDialog
 
-#TODO: .sampleman dir/file in each repository w/ sound metadata
+#TODO: Högerklickmeny: öppna med... (användardefinierade program)
+#TODO: exportera filer till viss samplerate & format, definierad av användare. dnd? (eg dnd wavpack-fil till ardour)
+#TODO: Exportera till...-folder, som sparas mellan sessions.
+#TODO: Redigera metadata på flera filer samtidigt (slå ihop tags? kopiera beskrivning? hur?)
+#                                                   Tags: x Edit x Merge current [clear]
+#                                                   Description: x Edit x Merge current [clear]
+
+
+#TODO: Internal player: start, stop, volym
+#TODO: Snapper-funktionalitet (dnd för snippet)
+#TODO: spara metadata i .sampleman-folder/fil i varje repository (lex git)
 
 class PathDialog(QtGui.QDialog):
     """Soundfile repository editor."""
