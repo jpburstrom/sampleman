@@ -6,15 +6,18 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>533</width>
-    <height>396</height>
+    <width>588</width>
+    <height>580</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="5" column="2">
+   <property name="margin">
+    <number>10</number>
+   </property>
+   <item row="7" column="2">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -24,67 +27,156 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="2">
-    <widget class="QLineEdit" name="lineEditTags"/>
-   </item>
-   <item row="3" column="2">
-    <widget class="QPlainTextEdit" name="textEditDescription"/>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
+   <item row="2" column="1" colspan="2">
+    <widget class="QGroupBox" name="tagsBox">
+     <property name="title">
       <string>Tags</string>
      </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Description</string>
+     <property name="flat">
+      <bool>false</bool>
      </property>
-     <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0" colspan="2">
-    <widget class="QLabel" name="label_3">
-     <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
-     </property>
-     <property name="text">
-      <string>Filename</string>
-     </property>
-     <property name="textFormat">
-      <enum>Qt::PlainText</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="2">
-    <widget class="QLabel" name="label_5">
-     <property name="text">
-      <string>/Users/johannes/path/to/long/soundfile/test.wav</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="2">
-    <widget class="QPlainTextEdit" name="textEditMeta">
-     <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
-     </property>
-     <property name="readOnly">
+     <property name="checkable">
       <bool>true</bool>
      </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <property name="margin">
+       <number>10</number>
+      </property>
+      <property name="spacing">
+       <number>5</number>
+      </property>
+      <item row="4" column="0" colspan="3">
+       <widget class="QLineEdit" name="lineEditTags"/>
+      </item>
+      <item row="6" column="1">
+       <widget class="QPushButton" name="tags_mergeButton">
+        <property name="text">
+         <string>Merge current</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="2">
+       <widget class="QPushButton" name="pushButton">
+        <property name="text">
+         <string>Clear</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>Metadata</string>
+   <item row="3" column="1" colspan="2">
+    <widget class="QGroupBox" name="descBox">
+     <property name="title">
+      <string>Description</string>
      </property>
-     <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     <property name="checkable">
+      <bool>true</bool>
      </property>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <property name="margin">
+       <number>10</number>
+      </property>
+      <property name="spacing">
+       <number>5</number>
+      </property>
+      <item row="0" column="0" colspan="5">
+       <widget class="QPlainTextEdit" name="textEditDescription"/>
+      </item>
+      <item row="2" column="0" colspan="3">
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="2" column="4">
+       <widget class="QPushButton" name="pushButton_4">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>Clear</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3">
+       <widget class="QPushButton" name="desc_mergeButton">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>Merge current</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="1" column="1" colspan="2">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string/>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_4">
+      <property name="margin">
+       <number>10</number>
+      </property>
+      <item row="1" column="0">
+       <widget class="QPlainTextEdit" name="textEditMeta">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>/Users/johannes/path/to/long/soundfile/test.wav</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>
@@ -98,8 +190,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
+     <x>333</x>
+     <y>465</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -114,12 +206,44 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>401</x>
+     <y>465</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>
      <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_4</sender>
+   <signal>clicked()</signal>
+   <receiver>textEditDescription</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>482</x>
+     <y>395</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>456</x>
+     <y>356</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>lineEditTags</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>490</x>
+     <y>215</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>477</x>
+     <y>192</y>
     </hint>
    </hints>
   </connection>
