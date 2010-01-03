@@ -7,97 +7,31 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL, SLOT
 
 from models import *
+from settings import SettingsDialog
 
 from mainwindowui import Ui_MainWindow
 from filewidgetui import Ui_Dialog
-from pathdialogui import Ui_PathDialog
 
-#TODO: Högerklickmeny: öppna med... (användardefinierade program)
-#TODO: exportera filer till viss samplerate & format, definierad av användare. dnd? (eg dnd wavpack-fil till ardour)
-#TODO: Exportera till...-folder, som sparas mellan sessions.
-#TODO: Redigera metadata på flera filer samtidigt (slå ihop tags? kopiera beskrivning? hur?)
-#                                                   Tags: x Edit x Merge current [clear]
-#                                                   Description: x Edit x Merge current [clear]
+"""
+TODO
+====
 
+* Högerklickmeny: öppna med... (användardefinierade program)
+* exportera filer till viss samplerate & format, definierad av användare. dnd? (eg dnd wavpack-fil till ardour)
+* Exportera till...-folder, som sparas mellan sessions.
+* Redigera metadata på flera filer samtidigt (slå ihop tags? kopiera beskrivning? hur?)
+* Spara sökningar under namn. Kanske ersätta tagrutan, eller som komplement.
+* Menyer
 
-#TODO: Internal player: start, stop, volym
-#TODO: Snapper-funktionalitet (dnd för snippet)
-#TODO: spara metadata i .sampleman-folder/fil i varje repository (lex git)
+* Add player to Tag editor
+* + Keyboard shortcuts
 
-class PathDialog(QtGui.QDialog):
-    """Soundfile repository editor."""
-
-    def __init__(self, *args):
-        QtGui.QDialog.__init__(self, *args)
-
-        self.ui = Ui_PathDialog()
-        self.ui.setupUi(self)
-        
-        self.repomodel = RepoModel(self)
-        self.ui.treeView.setModel(self.repomodel)
-        self.ui.treeView.resizeColumnToContents(0)
-
-
-        #Setup data
-        self.connect(self.ui.buttonAdd, SIGNAL("clicked()"), self.addRepo)
-        self.connect(self.ui.buttonDelete, SIGNAL("clicked()"), self.deleteRepo)
-        self.connect(self.ui.buttonRescan, SIGNAL("clicked()"), self.rescanRepo)
-        self.connect(self.ui.buttonEdit, SIGNAL("clicked()"), self.editRepo)
-
-        #TODO: deactivate delete/rescan when item is not selected
-
-    def addRepo(self):
-        """Add new repository.
-
-        """
-        path = QtGui.QFileDialog.getExistingDirectory(self, "Add a repository", os.path.expanduser("~"))
-        repo = self.repomodel.add_repo(unicode(path))
-        if QtGui.QMessageBox.question(
-                self, "Question", "Would you like to scan the new repository?",
-                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.Yes ) == QtGui.QMessageBox.Yes:
-            self.repomodel.scan_repo(repo)
-        session.commit()
-        self.parent().rebuild()
-
-
-    def deleteRepo(self):
-        """Delete selected repository.
-
-        """
-        #TODO : dialog box choosing btwn deleting single path and deleting entire repo
-        if QtGui.QMessageBox.question(
-                self, "Are you sure?", "Delete repository and soundfile data? (This will not remove them from your filesystem)",
-                QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok, QtGui.QMessageBox.Cancel ) == QtGui.QMessageBox.Ok:
-            for mi in self.ui.treeView.selectedIndexes():
-                #FIXME: set column to 0 and find path
-                if mi.column() == 0:
-                    path = mi.data().toString()
-                    break
-            self.repomodel.delete_repo(unicode(path))
-            self.parent().rebuild()
-            session.commit()
-
-    def rescanRepo(self):
-        """Rescan selected repository.
-
-        """
-        for mi in self.ui.treeView.selectedIndexes():
-            #FIXME: set column to 0 and find path
-            if mi.column() == 0:
-                path = mi.data().toString()
-                break
-        repo = Repo.get_by(path=unicode(path))
-        self.repomodel.scan_repo(repo)
-
-    def editRepo(self):
-        """Edit repository paths.
-        
-        """
-        mi = self.ui.treeView.selectedIndexes()[0]
-        #FIXME
-        #Get repo 
-        #find item to edit
-        #... (model stuff really)
+---
+* Annotations (importera externa annoteringsformat)
+* Internal player: start, stop, volym
+* Snapper-funktionalitet (dnd för snippet)
+* spara metadata i .sampleman-folder/fil i varje repository (lex git)
+"""
 
 
 class MyDialog(QtGui.QDialog):
@@ -195,7 +129,8 @@ class MyWindow(QtGui.QMainWindow):
         
         """
 
-        d = PathDialog(self)
+        d = SettingsDialog(self)
+        d.setTab("repositories")
         d.show()
 
     def start_search(self):

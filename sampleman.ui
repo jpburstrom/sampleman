@@ -6,32 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>651</width>
-    <height>496</height>
+    <width>647</width>
+    <height>562</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Sampleman</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout" columnstretch="1,4,0">
-    <item row="0" column="0" rowspan="2">
-     <widget class="QListView" name="tagView">
-      <property name="editTriggers">
-       <set>QAbstractItemView::NoEditTriggers</set>
-      </property>
-      <property name="dragDropMode">
-       <enum>QAbstractItemView::DragDrop</enum>
-      </property>
-      <property name="selectionMode">
-       <enum>QAbstractItemView::ExtendedSelection</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1" colspan="2">
+   <layout class="QGridLayout" name="gridLayout" columnstretch="1">
+    <item row="0" column="0">
      <widget class="QLineEdit" name="lineEdit"/>
     </item>
-    <item row="1" column="1">
+    <item row="1" column="0">
      <widget class="QTreeView" name="fileView">
       <property name="editTriggers">
        <set>QAbstractItemView::EditKeyPressed</set>
@@ -69,15 +56,6 @@
       <attribute name="headerShowSortIndicator" stdset="0">
        <bool>true</bool>
       </attribute>
-      <attribute name="headerCascadingSectionResizes">
-       <bool>false</bool>
-      </attribute>
-      <attribute name="headerShowSortIndicator" stdset="0">
-       <bool>true</bool>
-      </attribute>
-      <attribute name="headerHighlightSections">
-       <bool>true</bool>
-      </attribute>
      </widget>
     </item>
    </layout>
@@ -87,17 +65,43 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>651</width>
+     <width>647</width>
      <height>22</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <widget class="QMenu" name="menuOpen_with">
+     <property name="title">
+      <string>Open with</string>
+     </property>
+     <addaction name="actionApp"/>
+    </widget>
+    <widget class="QMenu" name="menuOpen_copy_with">
+     <property name="title">
+      <string>Open copy with</string>
+     </property>
+     <addaction name="actionApp_2"/>
+    </widget>
+    <widget class="QMenu" name="menuExport_as">
+     <property name="title">
+      <string>Export as</string>
+     </property>
+     <addaction name="actionApp_3"/>
+    </widget>
+    <addaction name="menuOpen_with"/>
+    <addaction name="menuOpen_copy_with"/>
+    <addaction name="menuExport_as"/>
+   </widget>
    <widget class="QMenu" name="menuLibrary">
     <property name="title">
-     <string>Library</string>
+     <string>Repos</string>
     </property>
     <widget class="QMenu" name="menuRescan_folders">
      <property name="title">
-      <string>Rescan folders</string>
+      <string>Rescan repos</string>
      </property>
      <addaction name="actionAll_folders"/>
      <addaction name="separator"/>
@@ -105,9 +109,46 @@
     <addaction name="menuRescan_folders"/>
     <addaction name="actionManage_folders"/>
    </widget>
+   <widget class="QMenu" name="menuTags">
+    <property name="title">
+     <string>Meta</string>
+    </property>
+    <addaction name="actionEdit_all"/>
+    <addaction name="actionEdit_one_by_one"/>
+   </widget>
    <addaction name="menuLibrary"/>
+   <addaction name="menuFile"/>
+   <addaction name="menuTags"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QDockWidget" name="dockWidget_2">
+   <property name="features">
+    <set>QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="windowTitle">
+    <string>Tags</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_2">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QListView" name="tagView">
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <property name="dragDropMode">
+        <enum>QAbstractItemView::DragDrop</enum>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::ExtendedSelection</enum>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="actionQuit">
    <property name="text">
     <string>Close</string>
@@ -130,7 +171,32 @@
   </action>
   <action name="actionManage_folders">
    <property name="text">
-    <string>Manage folders</string>
+    <string>Manage repos</string>
+   </property>
+  </action>
+  <action name="actionEdit_all">
+   <property name="text">
+    <string>Edit all</string>
+   </property>
+  </action>
+  <action name="actionEdit_one_by_one">
+   <property name="text">
+    <string>Edit one by one</string>
+   </property>
+  </action>
+  <action name="actionApp">
+   <property name="text">
+    <string>App</string>
+   </property>
+  </action>
+  <action name="actionApp_2">
+   <property name="text">
+    <string>App</string>
+   </property>
+  </action>
+  <action name="actionApp_3">
+   <property name="text">
+    <string>App</string>
    </property>
   </action>
  </widget>
