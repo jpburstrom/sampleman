@@ -16,12 +16,13 @@ from filewidgetui import Ui_Dialog
 TODO
 ====
 
+* Settings: fixa menyer. Labels? ny setting => signal => uppdatera menyerna
+    Vid programstart: befolka menyerna med QSettings
+    Vid editering: använd signaler från SettingsDialog
 * Högerklickmeny: öppna med... (användardefinierade program)
-* exportera filer till viss samplerate & format, definierad av användare. dnd? (eg dnd wavpack-fil till ardour)
-* Exportera till...-folder, som sparas mellan sessions.
 * Redigera metadata på flera filer samtidigt (slå ihop tags? kopiera beskrivning? hur?)
+* exportera filer till viss samplerate & format, definierad av användare. dnd? (eg dnd wavpack-fil till ardour)
 * Spara sökningar under namn. Kanske ersätta tagrutan, eller som komplement.
-* Menyer
 
 * Add player to Tag editor
 * + Keyboard shortcuts
@@ -81,22 +82,33 @@ Length\t\t{5} s ({6} samples) """.format(
 
 
 class MyWindow(QtGui.QMainWindow):
+
     def __init__(self, *args):
         QtGui.QMainWindow.__init__(self, *args)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
+        self.settingsDialog = None
+
         self.tagmodel = TagModel(self)
         self.ui.tagView.setModel(self.tagmodel)
         self.filemodel = SoundfileModel(self)
         self.ui.fileView.setModel(self.filemodel)
+        self.ui.fileView.setLayoutMode(self.ui.fileView.Batched)
+        self.ui.fileView.setBatchSize(40)
 
-        self.connect(self.ui.fileView, SIGNAL("doubleClicked(const QModelIndex &)"), self.on_fileView_doubleClick)
+        self._init_menus()
+
         self.connect(self.ui.lineEdit, SIGNAL("returnPressed()"), self.start_search)
         self.connect(self.ui.lineEdit, SIGNAL("textChanged(const QString &)"), self.on_lineEdit_textChanged)
         self.connect(self.ui.tagView, SIGNAL("clicked(const QModelIndex &)"), self.on_tagView_click)
         self.connect(self.ui.actionManage_folders, SIGNAL("triggered()"), self.manage_folders)
-        #self.ui.tagView.setRootIndex(0)
+
+        self.ui.fileView.doubleClicked.connect(self.on_fileView_startEdit)
+
+    def test(self, app):
+        #temp
+        print app 
 
     def on_tagView_click(self, mi):
         """Append selected tags to search."""
@@ -105,12 +117,12 @@ class MyWindow(QtGui.QMainWindow):
         [f.append(unicode(mi.data().toString())).append(", ") for mi in self.ui.tagView.selectedIndexes()]
         self.ui.lineEdit.setText(f)
 
-    def on_fileView_doubleClick(self, mi):
+    def on_fileView_startEdit(self, mi, all=False):
         """Open file dialog."""
-
+        item = self.filemodel.itemFromIndex(mi)
         d = MyDialog(
-                self.filemodel.index(mi.row(), 1).data().toString(),
-                self.filemodel.index(mi.row(), 0).data().toString()
+                item.data(item.repoRole).toString(),
+                item.data().toString()
                 )
         result = d.exec_()
         if result:
@@ -128,10 +140,10 @@ class MyWindow(QtGui.QMainWindow):
         """Open repository dialog.
         
         """
-
-        d = SettingsDialog(self)
-        d.setTab("repositories")
-        d.show()
+        if not self.settingsDialog:
+            self._setupSettings()
+        self.settingsDialog.setTab("repositories")
+        self.settingsDialog.show()
 
     def start_search(self):
         """Make list from searchbox, and start search.
@@ -140,13 +152,99 @@ class MyWindow(QtGui.QMainWindow):
 
         searches = [t.strip() for t in unicode(self.ui.lineEdit.text()).split(",") if t.strip()]
         self.filemodel.search(searches)
-        self.ui.fileView.resizeColumnToContents(0)
+        #self.ui.fileView.resizeColumnToContents(0)
 
     def rebuild(self):
         """Expensive redo-search-and-redraw-all method."""
 
         self.filemodel.rebuild()
         self.tagmodel.reload()
+
+    def _init_menus(self):
+        #TODO: remove dummy menu items
+        self.ui.menuOpen_with.clear()
+        self.ui.menuOpen_copy_with.clear()
+        self.ui.menuExport_as.clear()
+
+        self.ui.actionAll_folders.triggered.connect(self.on_repo_rescan)
+        for repo in Repo.query.all():
+            ac = self.ui.menuRescan_folders.addAction(repo.path) 
+            ac.triggered.connect(self.on_repo_rescan)
+       
+        settings = QtCore.QSettings("ljud.org", "Sampleman")
+        size = settings.beginReadArray("apps")
+        for i in range(size):
+            settings.setArrayIndex(i)
+            s = settings.value("key").toString()
+            if not s:
+                continue
+            ac = self.ui.menuOpen_with.addAction(s)
+            ac.triggered.connect(self.on_open_with)
+            ac = self.ui.menuOpen_copy_with.addAction(s)
+            ac.triggered.connect(self.on_open_copy_with)
+        settings.endArray()
+        size = settings.beginReadArray("folders")
+        for i in range(size):
+            if not s:
+                continue
+        settings.endArray()
+        size = settings.beginReadArray("formats")
+        for i in range(size):
+            if not s:
+                continue
+            settings.setArrayIndex(i)
+            s = settings.value("key").toString()
+            ac = self.ui.menuExport_as.addAction(s)
+            ac.triggered.connect(self.on_export_as)
+        settings.endArray()
+    
+    def on_newRepo(self, s):
+        self.ui.menuRescan_folders.addAction(
+                s).triggered.connect(self.on_repo_rescan)
+
+    def on_newFolder(self, s):
+        pass
+        #TODO
+
+    def on_newFormat(self, s):
+        self.ui.menuExport_as.addAction(
+                s).triggered.connect(self.on_export_as)
+
+    def on_newApp(self, s):
+        self.ui.menuOpen_with.addAction(
+                s).triggered.connect(self.on_open_with)
+        self.ui.menuOpen_copy_with.addAction(
+                s).triggered.connect(self.on_open_copy_with)
+        
+    
+    def on_export_as(self):
+        #TODO
+        print "export"
+
+    def on_open_with(self):
+        #TODO
+        print "openwith"
+
+    def on_open_copy_with(self):
+        #TODO
+        print "opencopy"
+
+    def on_repo_rescan(self):
+        path = self.sender().text()
+        if path == "All folders":
+            repos = Repo.query.all()
+        else:
+            repos = (Repo.get_by(path=unicode(path)),)
+        repomodel = RepoModel()
+        for repo in repos:
+            repomodel.scan_repo(repo)
+
+    def _setupSettings(self):
+        self.settingsDialog = SettingsDialog(self)
+        self.settingsDialog.newRepo.connect(self.on_newRepo)
+        self.settingsDialog.newFolder.connect(self.on_newFolder)
+        self.settingsDialog.newFormat.connect(self.on_newFormat)
+        self.settingsDialog.newApp.connect(self.on_newApp)
 
 
 initDB()

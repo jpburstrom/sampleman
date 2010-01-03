@@ -19,9 +19,9 @@
      <widget class="QLineEdit" name="lineEdit"/>
     </item>
     <item row="1" column="0">
-     <widget class="QTreeView" name="fileView">
+     <widget class="QListView" name="fileView">
       <property name="editTriggers">
-       <set>QAbstractItemView::EditKeyPressed</set>
+       <set>QAbstractItemView::NoEditTriggers</set>
       </property>
       <property name="dragEnabled">
        <bool>true</bool>
@@ -29,33 +29,21 @@
       <property name="dragDropMode">
        <enum>QAbstractItemView::DragOnly</enum>
       </property>
+      <property name="alternatingRowColors">
+       <bool>true</bool>
+      </property>
       <property name="selectionMode">
        <enum>QAbstractItemView::ExtendedSelection</enum>
       </property>
       <property name="selectionBehavior">
        <enum>QAbstractItemView::SelectItems</enum>
       </property>
-      <property name="indentation">
-       <number>0</number>
+      <property name="layoutMode">
+       <enum>QListView::Batched</enum>
       </property>
-      <property name="rootIsDecorated">
-       <bool>false</bool>
+      <property name="batchSize">
+       <number>30</number>
       </property>
-      <property name="sortingEnabled">
-       <bool>true</bool>
-      </property>
-      <property name="expandsOnDoubleClick">
-       <bool>true</bool>
-      </property>
-      <attribute name="headerCascadingSectionResizes">
-       <bool>false</bool>
-      </attribute>
-      <attribute name="headerHighlightSections">
-       <bool>true</bool>
-      </attribute>
-      <attribute name="headerShowSortIndicator" stdset="0">
-       <bool>true</bool>
-      </attribute>
      </widget>
     </item>
    </layout>
@@ -77,19 +65,16 @@
      <property name="title">
       <string>Open with</string>
      </property>
-     <addaction name="actionApp"/>
     </widget>
     <widget class="QMenu" name="menuOpen_copy_with">
      <property name="title">
       <string>Open copy with</string>
      </property>
-     <addaction name="actionApp_2"/>
     </widget>
     <widget class="QMenu" name="menuExport_as">
      <property name="title">
       <string>Export as</string>
      </property>
-     <addaction name="actionApp_3"/>
     </widget>
     <addaction name="menuOpen_with"/>
     <addaction name="menuOpen_copy_with"/>
@@ -194,9 +179,9 @@
     <string>App</string>
    </property>
   </action>
-  <action name="actionApp_3">
+  <action name="action_home_johannes">
    <property name="text">
-    <string>App</string>
+    <string>/home/johannes</string>
    </property>
   </action>
  </widget>

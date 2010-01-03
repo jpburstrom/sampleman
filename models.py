@@ -56,7 +56,6 @@ class Soundfile(Entity):
 
     def get_audiodata_from_file(self):
         ext = os.path.splitext(self.path)[1].lower()
-        print ext
         if ext == ".wv":
             print "Assuming wavpack file -- analyss not implemented"
             return True
@@ -151,7 +150,22 @@ class Repo(Entity):
     altpath3 = Field(Unicode(255))
     files = OneToMany("Soundfile", inverse="repo", cascade="all, delete-orphan")
 
+class SoundfileStandardItem(QtGui.QStandardItem):
+
+    def __init__(self, repo, *args):
+        QtGui.QStandardItem.__init__(self, *args)
+
+        self.repoRole = QtCore.Qt.UserRole + 1
+        self.repoData = QtCore.QVariant(repo)
+
+    def data(self, role=QtCore.Qt.DisplayRole):
+        if role == self.repoRole:
+            return self.repoData
+        else:
+            return QtGui.QStandardItem.data(self, role)
+
 class SoundfileModel(QtGui.QStandardItemModel):
+
     def __init__(self, *args):
         QtGui.QStandardItemModel.__init__(self, *args)
 
@@ -167,14 +181,13 @@ class SoundfileModel(QtGui.QStandardItemModel):
         if terms == self.searchterms and not force:
             return
         self.clear()
-        self.setHorizontalHeaderLabels((  "File", "Repo","Last modified", "Description", "Tags", "Format", 
-                "Samplerate", "Channels", "Length" ))
+        #self.setHorizontalHeaderLabels((  "File", "Repo","Last modified", "Description", "Tags", "Format", 
+        #        "Samplerate", "Channels", "Length" ))
         self.searchterms = terms
         if not terms:
-            [self._build(t) for t in Soundfile.query.filter_by(active=True).all()]
+            self._build(Soundfile.query.filter_by(active=True).all())
         else:
-            [self._build(t) for t in self._search_sounds(*terms)]
-
+            self._build(self._search_sounds(*terms))
 
     def rebuild(self):
         self.search(self.searchterms, True)
@@ -185,13 +198,9 @@ class SoundfileModel(QtGui.QStandardItemModel):
             return QtCore.Qt.ItemIsDragEnabled | defaultFlags
         else:
             return defaultFlags & QtCore.Qt.ItemIsDragEnabled
-            
 
-    def _build(self, t):
-        c = [QtGui.QStandardItem(str(t)) for t in (t.file_path, t.repo.path, t.mtime, 
-            t.desc, t.tagstring, t.file_format, t.samplerate, t.channels, t.length)]
-        [c[i].setEditable(0) for i in (0,1,4,5,6,7)]
-        self.appendRow(c)
+    def _build(self, all):
+        [self.appendRow(SoundfileStandardItem(QtCore.QString(t.repo.path), QtCore.QString(unicode(t.file_path)))) for t in all]
     
     def _search_sounds(self, *terms):
         """Search for soundfiles.

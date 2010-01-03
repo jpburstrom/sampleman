@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'sampleman.ui'
 #
-# Created: Thu Dec 31 10:51:55 2009
+# Created: Sun Jan  3 19:42:07 2010
 #      by: PyQt4 UI code generator 4.6.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -20,20 +20,16 @@ class Ui_MainWindow(object):
         self.lineEdit = QtGui.QLineEdit(self.centralwidget)
         self.lineEdit.setObjectName("lineEdit")
         self.gridLayout.addWidget(self.lineEdit, 0, 0, 1, 1)
-        self.fileView = QtGui.QTreeView(self.centralwidget)
-        self.fileView.setEditTriggers(QtGui.QAbstractItemView.EditKeyPressed)
+        self.fileView = QtGui.QListView(self.centralwidget)
+        self.fileView.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.fileView.setDragEnabled(True)
         self.fileView.setDragDropMode(QtGui.QAbstractItemView.DragOnly)
+        self.fileView.setAlternatingRowColors(True)
         self.fileView.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.fileView.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
-        self.fileView.setIndentation(0)
-        self.fileView.setRootIsDecorated(False)
-        self.fileView.setSortingEnabled(True)
-        self.fileView.setExpandsOnDoubleClick(True)
+        self.fileView.setLayoutMode(QtGui.QListView.Batched)
+        self.fileView.setBatchSize(30)
         self.fileView.setObjectName("fileView")
-        self.fileView.header().setCascadingSectionResizes(False)
-        self.fileView.header().setHighlightSections(True)
-        self.fileView.header().setSortIndicatorShown(True)
         self.gridLayout.addWidget(self.fileView, 1, 0, 1, 1)
         self.gridLayout.setColumnStretch(0, 1)
         MainWindow.setCentralWidget(self.centralwidget)
@@ -91,11 +87,8 @@ class Ui_MainWindow(object):
         self.actionApp.setObjectName("actionApp")
         self.actionApp_2 = QtGui.QAction(MainWindow)
         self.actionApp_2.setObjectName("actionApp_2")
-        self.actionApp_3 = QtGui.QAction(MainWindow)
-        self.actionApp_3.setObjectName("actionApp_3")
-        self.menuOpen_with.addAction(self.actionApp)
-        self.menuOpen_copy_with.addAction(self.actionApp_2)
-        self.menuExport_as.addAction(self.actionApp_3)
+        self.action_home_johannes = QtGui.QAction(MainWindow)
+        self.action_home_johannes.setObjectName("action_home_johannes")
         self.menuFile.addAction(self.menuOpen_with.menuAction())
         self.menuFile.addAction(self.menuOpen_copy_with.menuAction())
         self.menuFile.addAction(self.menuExport_as.menuAction())
@@ -105,8 +98,8 @@ class Ui_MainWindow(object):
         self.menuLibrary.addAction(self.actionManage_folders)
         self.menuTags.addAction(self.actionEdit_all)
         self.menuTags.addAction(self.actionEdit_one_by_one)
-        self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuLibrary.menuAction())
+        self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuTags.menuAction())
 
         self.retranslateUi(MainWindow)
@@ -120,7 +113,7 @@ class Ui_MainWindow(object):
         self.menuExport_as.setTitle(QtGui.QApplication.translate("MainWindow", "Export as", None, QtGui.QApplication.UnicodeUTF8))
         self.menuLibrary.setTitle(QtGui.QApplication.translate("MainWindow", "Repos", None, QtGui.QApplication.UnicodeUTF8))
         self.menuRescan_folders.setTitle(QtGui.QApplication.translate("MainWindow", "Rescan repos", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuTags.setTitle(QtGui.QApplication.translate("MainWindow", "Metadata", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuTags.setTitle(QtGui.QApplication.translate("MainWindow", "Meta", None, QtGui.QApplication.UnicodeUTF8))
         self.dockWidget_2.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Tags", None, QtGui.QApplication.UnicodeUTF8))
         self.actionQuit.setText(QtGui.QApplication.translate("MainWindow", "Close", None, QtGui.QApplication.UnicodeUTF8))
         self.actionTest.setText(QtGui.QApplication.translate("MainWindow", "Test", None, QtGui.QApplication.UnicodeUTF8))
@@ -131,5 +124,5 @@ class Ui_MainWindow(object):
         self.actionEdit_one_by_one.setText(QtGui.QApplication.translate("MainWindow", "Edit one by one", None, QtGui.QApplication.UnicodeUTF8))
         self.actionApp.setText(QtGui.QApplication.translate("MainWindow", "App", None, QtGui.QApplication.UnicodeUTF8))
         self.actionApp_2.setText(QtGui.QApplication.translate("MainWindow", "App", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionApp_3.setText(QtGui.QApplication.translate("MainWindow", "App", None, QtGui.QApplication.UnicodeUTF8))
+        self.action_home_johannes.setText(QtGui.QApplication.translate("MainWindow", "/home/johannes", None, QtGui.QApplication.UnicodeUTF8))
 

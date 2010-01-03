@@ -9,8 +9,14 @@ from PyQt4.QtCore import SIGNAL, SLOT
 from models import *
 from settingsui import Ui_SettingsDialog
 
+
 class SettingsDialog(QtGui.QDialog):
-    """Soundfile repository editor."""
+    """Settings editor."""
+
+    newRepo = QtCore.pyqtSignal(QtCore.QString)
+    newFolder = QtCore.pyqtSignal(QtCore.QString)
+    newFormat = QtCore.pyqtSignal(QtCore.QString)
+    newApp = QtCore.pyqtSignal(QtCore.QString)
 
     def __init__(self, *args):
         QtGui.QDialog.__init__(self, *args)
@@ -71,7 +77,7 @@ class SettingsDialog(QtGui.QDialog):
                 QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.Yes ) == QtGui.QMessageBox.Yes:
             self.repomodel.scan_repo(repo)
         session.commit()
-        self.parent().rebuild()
+        self.newRepo.emit(path)
 
     def deleteRepo(self):
         """Delete selected repository.
@@ -132,6 +138,7 @@ class SettingsDialog(QtGui.QDialog):
             return
         row = self.ui.listWidget.row(item)
         self._writeSettingsArray("apps", row, text)
+        self.newApp.emit(text)
 
     def addFormat(self):
         """Add file export format.
@@ -151,6 +158,7 @@ class SettingsDialog(QtGui.QDialog):
             return
         row = self.ui.listWidget_2.row(item)
         self._writeSettingsArray("formats", row, text)
+        self.newFormat.emit(text)
 
     def addFolder(self):
         """Add file export folder.
@@ -176,6 +184,7 @@ class SettingsDialog(QtGui.QDialog):
             return
         row = self.ui.listWidget_3.row(item)
         self._writeSettingsArray("folders", row, text)
+        self.newFolder.emit(text)
 
     def _deleteSelected(self, w, key):
         """Delete and return selected items from widget w.
@@ -207,7 +216,6 @@ class SettingsDialog(QtGui.QDialog):
         size = self._settings.beginReadArray(key)
         for i in range(size):
             self._settings.setArrayIndex(i)
-            #bad string trim hack
             w.addItem(self._settings.value("key").toString())
         self._settings.endArray()
 
