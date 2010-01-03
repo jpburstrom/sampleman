@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'filewidget.ui'
 #
-# Created: Thu Dec 31 01:42:50 2009
+# Created: Sun Jan  3 21:04:53 2010
 #      by: PyQt4 UI code generator 4.6.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -84,6 +84,7 @@ class Ui_Dialog(object):
         self.textEditMeta.setObjectName("textEditMeta")
         self.gridLayout_4.addWidget(self.textEditMeta, 1, 0, 1, 1)
         self.label_5 = QtGui.QLabel(self.groupBox)
+        self.label_5.setWordWrap(True)
         self.label_5.setObjectName("label_5")
         self.gridLayout_4.addWidget(self.label_5, 0, 0, 1, 1)
         self.gridLayout.addWidget(self.groupBox, 1, 1, 1, 2)

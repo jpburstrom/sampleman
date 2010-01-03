@@ -5,6 +5,7 @@ import sys
 import datetime
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL, SLOT
+from sqlalchemy.orm import join
 
 from models import *
 from settings import SettingsDialog
@@ -38,47 +39,83 @@ TODO
 class MyDialog(QtGui.QDialog):
     """Soundfile attributes edit dialog."""
 
-    def __init__(self, repo, path, *args):
+    def __init__(self, *items):
         """Constructor.
 
         """
-
-        QtGui.QDialog.__init__(self, *args)
-
-        sf = Soundfile.get_from_paths(unicode(repo), unicode(path))
-        self.sf = sf
-
+        
+        QtGui.QDialog.__init__(self)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
+
+
+        sfs = []
+        paths = []
+        for item in items:
+            repo = item.data(item.repoRole).toString()
+            path = item.data().toString()
+            paths.append(unicode(path))
+            sfs.append(Soundfile.get_from_paths(unicode(repo), unicode(path)))
+
+        self.single = len(sfs) == 1
+
+        path = "\n".join(paths)
         self.setWindowTitle(path)
+
 
         #Setup data
         self.ui.label_5.setText(path)
 
-        metadata = """File format\t\t{0}
+        if self.single:
+            sf = sfs[0]
+            self.sf = sf
+            metadata = """File format\t\t{0}
 Samplerate\t\t{1}
 Channels\t\t{2}
 Encoding\t\t{3}
 Endianness\t\t{4}
 Length\t\t{5} s ({6} samples) """.format(
         sf.file_format, sf.samplerate, sf.channels, sf.encoding, sf.endianness, sf.length, sf.nframes)
+            self.ui.textEditMeta.appendPlainText(metadata)
+            self.ui.textEditDescription.appendPlainText(sf.desc or "")
+            tags = ", ".join([t.name for t in sf.tags])
+            self.ui.lineEditTags.setText(tags)
+        else:
+            self.ui.textEditMeta.hide()
+            self.mergedDesc = list(set([s.desc for s in sfs if s.desc]))
+            #ok, det här kan göras i sql också, men orka, typ
+            taglist = []
+            [taglist.extend(s.tags) for s in sfs]
+            self.mergedTags = list(set([t.name for t in taglist]))
+        
+            self.ui.desc_mergeButton.setEnabled((not not self.mergedDesc))
+            self.ui.tags_mergeButton.setEnabled((not not self.mergedTags))
 
-        tags = ", ".join([t.name for t in sf.tags])
+            self.ui.tagsBox.setChecked(False)
+            self.ui.descBox.setChecked(False)
+        
+        self.sfs = sfs
 
-        self.ui.textEditMeta.appendPlainText(metadata)
-        self.ui.textEditDescription.appendPlainText(sf.desc or "")
-        self.ui.lineEditTags.setText(tags)
+        self.connect(self, SIGNAL("accepted()"), self.on_accepted)
 
-        self.connect(self, SIGNAL("accepted()"), self.on_accept)
-
-    def on_accept(self):
+    def on_accepted(self):
         """Commit edits.
         
         """
 
-        self.sf.tagstring = unicode(self.ui.lineEditTags.text()).lower()
-        self.sf.desc = unicode(self.ui.textEditDescription.toPlainText())
+        if self.ui.tagsBox.isChecked():
+            for s in self.sfs:
+                s.tagstring = unicode(self.ui.lineEditTags.text()).lower()
+        if self.ui.descBox.isChecked():
+            for s in self.sfs:
+                s.desc = unicode(self.ui.textEditDescription.toPlainText())
         session.commit()
+    
+    def on_tags_mergeButton_clicked(self):
+        self.ui.lineEditTags.setText(", ".join(self.mergedTags))
+
+    def on_desc_mergeButton_clicked(self):
+        [self.ui.textEditDescription.appendPlainText(d) for d in self.mergedDesc]
 
 
 class MyWindow(QtGui.QMainWindow):
@@ -119,11 +156,8 @@ class MyWindow(QtGui.QMainWindow):
 
     def on_fileView_startEdit(self, mi, all=False):
         """Open file dialog."""
-        item = self.filemodel.itemFromIndex(mi)
-        d = MyDialog(
-                item.data(item.repoRole).toString(),
-                item.data().toString()
-                )
+        items = [self.filemodel.itemFromIndex(m) for m in self.ui.fileView.selectedIndexes()]
+        d = MyDialog(*items)
         result = d.exec_()
         if result:
             self.filemodel.rebuild()

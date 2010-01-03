@@ -104,8 +104,8 @@ class Soundfile(Entity):
     def set_taglist(self, tags):
         """Property setter: set tags as list"""
         tl = self.taglist
-        [tags.remove(t) for t in self.taglist if t in tags]
-        [self.tags.append(Tag.get_by_or_init(name=t)) for t in tags if t]
+        [self.tags.remove(Tag.get_by_or_init(name=t)) for t in tl if t not in tags]
+        [self.tags.append(Tag.get_by_or_init(name=t)) for t in tags if t and t not in tl]
 
     taglist = property(get_taglist, set_taglist)
 
@@ -127,7 +127,6 @@ class Soundfile(Entity):
 
     @classmethod
     def get_from_paths(cls, root, path):
-        print root, path
         r = Repo.get_by(path=root)
         return cls.get_by(repo=r, file_path=path)
 
