@@ -46,6 +46,13 @@
       </property>
      </widget>
     </item>
+    <item row="2" column="0">
+     <widget class="QSlider" name="seekSlider">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -79,6 +86,7 @@
     <addaction name="menuOpen_with"/>
     <addaction name="menuOpen_copy_with"/>
     <addaction name="menuExport_as"/>
+    <addaction name="actionPlay"/>
    </widget>
    <widget class="QMenu" name="menuLibrary">
     <property name="title">
@@ -182,6 +190,17 @@
   <action name="action_home_johannes">
    <property name="text">
     <string>/home/johannes</string>
+   </property>
+  </action>
+  <action name="actionPlay">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Play</string>
+   </property>
+   <property name="shortcut">
+    <string>Space</string>
    </property>
   </action>
  </widget>

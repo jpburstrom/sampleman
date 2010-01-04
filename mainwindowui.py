@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'sampleman.ui'
 #
-# Created: Sun Jan  3 19:42:07 2010
+# Created: Mon Jan  4 21:25:43 2010
 #      by: PyQt4 UI code generator 4.6.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -31,6 +31,10 @@ class Ui_MainWindow(object):
         self.fileView.setBatchSize(30)
         self.fileView.setObjectName("fileView")
         self.gridLayout.addWidget(self.fileView, 1, 0, 1, 1)
+        self.seekSlider = QtGui.QSlider(self.centralwidget)
+        self.seekSlider.setOrientation(QtCore.Qt.Horizontal)
+        self.seekSlider.setObjectName("seekSlider")
+        self.gridLayout.addWidget(self.seekSlider, 2, 0, 1, 1)
         self.gridLayout.setColumnStretch(0, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
@@ -89,9 +93,13 @@ class Ui_MainWindow(object):
         self.actionApp_2.setObjectName("actionApp_2")
         self.action_home_johannes = QtGui.QAction(MainWindow)
         self.action_home_johannes.setObjectName("action_home_johannes")
+        self.actionPlay = QtGui.QAction(MainWindow)
+        self.actionPlay.setCheckable(True)
+        self.actionPlay.setObjectName("actionPlay")
         self.menuFile.addAction(self.menuOpen_with.menuAction())
         self.menuFile.addAction(self.menuOpen_copy_with.menuAction())
         self.menuFile.addAction(self.menuExport_as.menuAction())
+        self.menuFile.addAction(self.actionPlay)
         self.menuRescan_folders.addAction(self.actionAll_folders)
         self.menuRescan_folders.addSeparator()
         self.menuLibrary.addAction(self.menuRescan_folders.menuAction())
@@ -125,4 +133,6 @@ class Ui_MainWindow(object):
         self.actionApp.setText(QtGui.QApplication.translate("MainWindow", "App", None, QtGui.QApplication.UnicodeUTF8))
         self.actionApp_2.setText(QtGui.QApplication.translate("MainWindow", "App", None, QtGui.QApplication.UnicodeUTF8))
         self.action_home_johannes.setText(QtGui.QApplication.translate("MainWindow", "/home/johannes", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionPlay.setText(QtGui.QApplication.translate("MainWindow", "Play", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionPlay.setShortcut(QtGui.QApplication.translate("MainWindow", "Space", None, QtGui.QApplication.UnicodeUTF8))
 

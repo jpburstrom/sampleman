@@ -2,7 +2,9 @@
 
 import os
 import sys
-import datetime
+#import datetime
+import subprocess 
+
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL, SLOT
 from sqlalchemy.orm import join
@@ -17,16 +19,18 @@ from filewidgetui import Ui_Dialog
 TODO
 ====
 
-* Settings: fixa menyer. Labels? ny setting => signal => uppdatera menyerna
-    Vid programstart: befolka menyerna med QSettings
-    Vid editering: använd signaler från SettingsDialog
-* Högerklickmeny: öppna med... (användardefinierade program)
-* Redigera metadata på flera filer samtidigt (slå ihop tags? kopiera beskrivning? hur?)
-* exportera filer till viss samplerate & format, definierad av användare. dnd? (eg dnd wavpack-fil till ardour)
+* Fixa kopplingen QAction => spawn -- export, copy etc.
+* Addera fördefinierad tag till använda (kopierade, dragna, etc) filer
+* Ev lägga högerklickmeny (samma innehåll som huvudmeny) 
+* dnd? (eg dnd wavpack-fil till ardour)
 * Spara sökningar under namn. Kanske ersätta tagrutan, eller som komplement.
 
 * Add player to Tag editor
 * + Keyboard shortcuts
+
+FIXME
+* taglist onChange => search
+* Fixa sökningarna
 
 ---
 * Annotations (importera externa annoteringsformat)
@@ -125,6 +129,9 @@ class MyWindow(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
+        self.ui.seekSlider.hide()
+
+
         self.settingsDialog = None
 
         self.tagmodel = TagModel(self)
@@ -146,6 +153,12 @@ class MyWindow(QtGui.QMainWindow):
     def test(self, app):
         #temp
         print app 
+
+    def on_actionPlay_toggled(self, boo):
+        """Plays current sound."""
+        #Quick hack, will do for now until I sort out how to play things
+        file = self.filemodel.pathFromIndex(self.ui.fileView.currentIndex())
+        subprocess.Popen(("open", "-a", "VLC", file))
 
     def on_tagView_click(self, mi):
         """Append selected tags to search."""
