@@ -163,7 +163,7 @@ class MyWindow(QtGui.QMainWindow):
         self.connect(self.ui.actionManage_folders, SIGNAL("triggered()"), self.manage_folders)
 
         self.ui.fileView.doubleClicked.connect(self.on_fileView_startEdit)
-        self.ui.fileView.selectionModel().currentChanged.connect(self.on_fileView_activated)
+        self.ui.fileView.selectionModel().currentChanged.connect(self.on_fileView_currentChanged)
 
     def on_actionPlay_toggled(self, boo):
         """Plays current sound."""
@@ -184,7 +184,7 @@ class MyWindow(QtGui.QMainWindow):
         [f.append(unicode(mi.data().toString())).append(", ") for mi in self.ui.tagView.selectedIndexes()]
         self.ui.lineEdit.setText(f)
 
-    def on_fileView_activated(self, mi, mip):
+    def on_fileView_currentChanged(self, mi, mip):
         sf = self.filemodel.soundfileFromIndex(mi)
         if sf.channels is None:
             metadata = "<br/>Couldn't fetch metadata."
@@ -208,9 +208,13 @@ class MyWindow(QtGui.QMainWindow):
         """Check if current string calls for a new search.
         
         """
-
-        if s.strip()[-1] == ",":
+        try:
+            test = s.strip()[-1] == ","
+        except IndexError:
             self.start_search()
+        else:
+            if test:
+                self.start_search()
 
     def manage_folders(self):
         """Open repository dialog.

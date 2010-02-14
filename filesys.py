@@ -26,5 +26,5 @@ def scan(root):
         yield [os.path.join(np, f) for f in files if "audio" == mimetypes.guess_type(f)[0][:5]]
         
     
-for i in scan("/Users/johannes/samples/misc"):
-    print i
+#for i in scan("/Users/johannes/samples/misc"):
+#    print i

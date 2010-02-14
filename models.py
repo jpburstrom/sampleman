@@ -7,6 +7,8 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL, SLOT
 
 from scikits.audiolab import Sndfile
+from mutagen.wavpack import WavPackInfo
+from mutagen.mp3 import MPEGInfo
 from elixir import *
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import or_, and_
@@ -57,10 +59,30 @@ class Soundfile(Entity):
     def get_audiodata_from_file(self):
         ext = os.path.splitext(self.path)[1].lower()
         if ext == ".wv":
-            print "Assuming wavpack file -- analyss not implemented"
+            with open(self.path, "r") as f:
+                wp = WavPackInfo(f)
+            self.file_format = u"wavpack"
+            self.samplerate = wp.sample_rate
+            self.channels = wp.channels
+            #FIXME: set endianness and encoding, right now i don't care
+            self.endianness = u"" 
+            self.encoding = u""
+            self.nframes = wp.nframes
+            self.length = wp.length
             return True
         elif ext == ".mp3":
-            print "Assuming mp3 file -- analysis not implemented "
+            with open(self.path, "r") as f:
+                wp = MPEGInfo(f)
+            self.file_format = u"mp3"
+            self.samplerate = wp.sample_rate
+            self.channels = (wp.mode < 3) + 1
+            #FIXME: set endianness, right now i don't care
+            self.endianness = u"" 
+            #mapping encoding to bitrate
+            self.encoding = u"{0}kbps".format(wp.bitrate/1000.)
+            #FIXME: nframes?
+            self.nframes = 0
+            self.length = wp.length
             return True
         else:
             try:
@@ -174,7 +196,8 @@ class SoundfileModel(QtGui.QStandardItemModel):
         self.connect(self, SIGNAL("itemChanged(QStandardItem)"), self.on_itemChanged)
 
     def on_itemChanged(self, item):
-        print item.text()
+        pass
+        #print item.text()
 
     def search(self, terms=None, force=False):
         if terms == self.searchterms and not force:
@@ -352,10 +375,11 @@ class RepoModel(QtGui.QStandardItemModel):
             for lis in filesys.scan(path):
                 [Soundfile.get_by_or_init(
                     repo=repo, file_path=p).get_data_from_file() for p in lis]
+        session.commit()
 
             
 def initDB():
-    print "initDB"
+    #print "initDB"
     # Make sure ~/.pyqtodo exists
     if not os.path.isdir(dbdir):
         os.mkdir(dbdir)
