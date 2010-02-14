@@ -13,10 +13,10 @@ from settingsui import Ui_SettingsDialog
 class SettingsDialog(QtGui.QDialog):
     """Settings editor."""
 
-    newRepo = QtCore.pyqtSignal(QtCore.QString)
-    newFolder = QtCore.pyqtSignal(QtCore.QString)
-    newFormat = QtCore.pyqtSignal(QtCore.QString)
-    newApp = QtCore.pyqtSignal(QtCore.QString)
+    newRepo = QtCore.pyqtSignal(unicode)
+    newFolder = QtCore.pyqtSignal(unicode)
+    newFormat = QtCore.pyqtSignal(unicode)
+    newApp = QtCore.pyqtSignal(unicode)
 
     def __init__(self, *args):
         QtGui.QDialog.__init__(self, *args)

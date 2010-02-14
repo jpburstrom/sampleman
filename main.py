@@ -5,8 +5,12 @@ import sys
 #import datetime
 import subprocess 
 
+import sip
+sip.setapi('QString', 2)
+
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL, SLOT
+from PyQt4.phonon import Phonon
 from sqlalchemy.orm import join
 
 from models import *
@@ -14,6 +18,7 @@ from settings import SettingsDialog
 
 from mainwindowui import Ui_MainWindow
 from filewidgetui import Ui_Dialog
+
 
 """
 TODO
@@ -24,6 +29,7 @@ TODO
 * Ev lägga högerklickmeny (samma innehåll som huvudmeny) 
 * dnd? (eg dnd wavpack-fil till ardour)
 * Spara sökningar under namn. Kanske ersätta tagrutan, eller som komplement.
+* Offline preview (ogg?)
 
 * Add player to Tag editor
 * + Keyboard shortcuts
@@ -129,7 +135,11 @@ class MyWindow(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.ui.seekSlider.hide()
+        self.audioOutput = Phonon.AudioOutput(Phonon.MusicCategory, self)
+        self.mediaObject = Phonon.MediaObject(self)
+        self.ui.seekSlider_2.setMediaObject(self.mediaObject)
+        self.ui.volumeSlider_2.setAudioOutput(self.audioOutput)
+        Phonon.createPath(self.mediaObject, self.audioOutput)
 
 
         self.settingsDialog = None
@@ -141,6 +151,10 @@ class MyWindow(QtGui.QMainWindow):
         self.ui.fileView.setLayoutMode(self.ui.fileView.Batched)
         self.ui.fileView.setBatchSize(40)
 
+        self.ui.actionShow_tags.setChecked(0)
+        self.ui.actionShow_volume.setChecked(0)
+
+
         self._init_menus()
 
         self.connect(self.ui.lineEdit, SIGNAL("returnPressed()"), self.start_search)
@@ -149,16 +163,19 @@ class MyWindow(QtGui.QMainWindow):
         self.connect(self.ui.actionManage_folders, SIGNAL("triggered()"), self.manage_folders)
 
         self.ui.fileView.doubleClicked.connect(self.on_fileView_startEdit)
-
-    def test(self, app):
-        #temp
-        print app 
+        self.ui.fileView.selectionModel().currentChanged.connect(self.on_fileView_activated)
 
     def on_actionPlay_toggled(self, boo):
         """Plays current sound."""
-        #Quick hack, will do for now until I sort out how to play things
         file = self.filemodel.pathFromIndex(self.ui.fileView.currentIndex())
-        subprocess.Popen(("open", "-a", "VLC", file))
+        if boo or self.mediaObject.currentSource().fileName() != file:
+            self.mediaObject.setCurrentSource(Phonon.MediaSource(file))
+            self.mediaObject.play()
+            self.ui.actionPlay.setChecked(True)
+        else:
+            self.ui.actionPlay.setChecked(False)
+            self.mediaObject.stop()
+
 
     def on_tagView_click(self, mi):
         """Append selected tags to search."""
@@ -167,6 +184,18 @@ class MyWindow(QtGui.QMainWindow):
         [f.append(unicode(mi.data().toString())).append(", ") for mi in self.ui.tagView.selectedIndexes()]
         self.ui.lineEdit.setText(f)
 
+    def on_fileView_activated(self, mi, mip):
+        sf = self.filemodel.soundfileFromIndex(mi)
+        if sf.channels is None:
+            metadata = "<br/>Couldn't fetch metadata."
+        else:
+            ch = min(sf.channels, 3)
+            channels = [0, "Mono", "Stereo", "{0} channels".format(sf.channels)][ch]
+            metadata = """<br/>{1}kHz {2} {0} {4}
+                <br/>Encoding: {3}<br/>Length: {5:.2f} s ({6} samples) """.format(
+        sf.file_format, sf.samplerate/1000.0, channels, sf.encoding, sf.endianness, sf.length, sf.nframes)
+        self.ui.fileInfoLabel.setText("<b>{0}</b>\n{1}".format(sf.path, metadata))
+        
     def on_fileView_startEdit(self, mi, all=False):
         """Open file dialog."""
         items = [self.filemodel.itemFromIndex(m) for m in self.ui.fileView.selectedIndexes()]
@@ -180,7 +209,7 @@ class MyWindow(QtGui.QMainWindow):
         
         """
 
-        if s.trimmed().endsWith(","):
+        if s.strip()[-1] == ",":
             self.start_search()
 
     def manage_folders(self):
@@ -270,6 +299,8 @@ class MyWindow(QtGui.QMainWindow):
 
     def on_open_with(self):
         #TODO
+        pgm = self.sender().text()
+        QtCore.QProcess.startDetached(pgm)
         print "openwith"
 
     def on_open_copy_with(self):

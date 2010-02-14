@@ -204,8 +204,14 @@ class SoundfileModel(QtGui.QStandardItemModel):
         path = unicode(item.data().toString())
         return os.path.join(repo, path)
 
+    def soundfileFromIndex(self, mi):
+        item = self.itemFromIndex(mi)
+        repo = unicode(item.data(item.repoRole).toString())
+        path = unicode(item.data().toString())
+        return Soundfile.get_from_paths(repo, path)
+
     def _build(self, all):
-        [self.appendRow(SoundfileStandardItem(QtCore.QString(t.repo.path), QtCore.QString(unicode(t.file_path)))) for t in all]
+        [self.appendRow(SoundfileStandardItem(t.repo.path, unicode(t.file_path))) for t in all]
     
     def _search_sounds(self, *terms):
         """Search for soundfiles.
