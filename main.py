@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import os
 import sys
 #import datetime
-import subprocess 
 
 import sip
 sip.setapi('QString', 2)
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL, SLOT
-from PyQt4.phonon import Phonon
-from sqlalchemy.orm import join
+from PyQt4.phonon import Phonon 
+#from sqlalchemy.orm import join
 
 from models import *
 from settings import SettingsDialog
@@ -35,16 +33,14 @@ TODO
 * + Keyboard shortcuts
 
 FIXME
-* taglist onChange => search
-* Fixa sökningarna
+* Drag-drop raderar filer från listan
 
 ---
 * Annotations (importera externa annoteringsformat)
-* Internal player: start, stop, volym
 * Snapper-funktionalitet (dnd för snippet)
 * spara metadata i .sampleman-folder/fil i varje repository (lex git)
 """
-
+#TODO: fix something
 
 class MyDialog(QtGui.QDialog):
     """Soundfile attributes edit dialog."""
@@ -90,6 +86,8 @@ Length\t\t{5} s ({6} samples) """.format(
             self.ui.textEditDescription.appendPlainText(sf.desc or "")
             tags = ", ".join([t.name for t in sf.tags])
             self.ui.lineEditTags.setText(tags)
+            self.ui.desc_mergeButton.hide()
+            self.ui.tags_mergeButton.hide()
         else:
             self.ui.textEditMeta.hide()
             self.mergedDesc = list(set([s.desc for s in sfs if s.desc]))
@@ -105,8 +103,9 @@ Length\t\t{5} s ({6} samples) """.format(
             self.ui.descBox.setChecked(False)
         
         self.sfs = sfs
-
         self.connect(self, SIGNAL("accepted()"), self.on_accepted)
+
+           
 
     def on_accepted(self):
         """Commit edits.
@@ -150,9 +149,19 @@ class MyWindow(QtGui.QMainWindow):
         self.ui.fileView.setModel(self.filemodel)
         self.ui.fileView.setLayoutMode(self.ui.fileView.Batched)
         self.ui.fileView.setBatchSize(40)
+        self.stackmodel = SimpleFileModel(self)
+        self.ui.stack.setModel(self.stackmodel)
 
         self.ui.actionShow_tags.setChecked(0)
         self.ui.actionShow_volume.setChecked(0)
+
+        #
+        # Set shortcuts
+
+        self.ui.actionPreferences.setShortcut(QtGui.QKeySequence.Preferences)
+        self.ui.actionPreferences.setShortcut(QtGui.QKeySequence.Quit)
+        self.ui.actionEdit_all.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_E))
+        self.ui.actionEdit_one_by_one.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_E))
 
 
         self._init_menus()
@@ -160,11 +169,17 @@ class MyWindow(QtGui.QMainWindow):
         self.connect(self.ui.lineEdit, SIGNAL("returnPressed()"), self.start_search)
         self.connect(self.ui.lineEdit, SIGNAL("textChanged(const QString &)"), self.on_lineEdit_textChanged)
         self.connect(self.ui.tagView, SIGNAL("clicked(const QModelIndex &)"), self.on_tagView_click)
-        self.connect(self.ui.actionManage_folders, SIGNAL("triggered()"), self.manage_folders)
+        self.connect(self.ui.actionPreferences, SIGNAL("triggered()"), self.manage_folders)
 
-        self.ui.fileView.doubleClicked.connect(self.on_fileView_startEdit)
+        self.ui.fileView.doubleClicked.connect(self.edit_all)
+        self.ui.actionEdit_all.triggered.connect(self.edit_all)
+        self.ui.actionEdit_one_by_one.triggered.connect(self.edit_one_by_one)
         self.ui.fileView.selectionModel().currentChanged.connect(self.on_fileView_currentChanged)
+        self.ui.actionStack.triggered.connect(self.on_actionStack)
 
+    def on_actionStack(self):
+        [self.stackmodel.appendRow(self.filemodel.itemFromIndex(m).clone()) for m in self.ui.fileView.selectedIndexes()]
+    
     def on_actionPlay_toggled(self, boo):
         """Plays current sound."""
         file = self.filemodel.pathFromIndex(self.ui.fileView.currentIndex())
@@ -180,9 +195,17 @@ class MyWindow(QtGui.QMainWindow):
     def on_tagView_click(self, mi):
         """Append selected tags to search."""
 
-        f = QtCore.QString()
-        [f.append(unicode(mi.data().toString())).append(", ") for mi in self.ui.tagView.selectedIndexes()]
-        self.ui.lineEdit.setText(f)
+        fa = self.ui.lineEdit.text()
+        f = ",".join([f.strip() for f in fa.split(",") if f.strip() and not f.strip()[0]=="t"])
+        if f:
+            self.ui.lineEdit.setText(
+                f + ", t=" + ", t=".join([mi.data().toString() for mi in self.ui.tagView.selectedIndexes()])
+                )
+        else:
+            self.ui.lineEdit.setText(
+                "t=" + ", t=".join([mi.data().toString() for mi in self.ui.tagView.selectedIndexes()])
+                )
+        self.start_search()
 
     def on_fileView_currentChanged(self, mi, mip):
         sf = self.filemodel.soundfileFromIndex(mi)
@@ -196,13 +219,20 @@ class MyWindow(QtGui.QMainWindow):
         sf.file_format, sf.samplerate/1000.0, channels, sf.encoding, sf.endianness, sf.length, sf.nframes)
         self.ui.fileInfoLabel.setText("<b>{0}</b>\n{1}".format(sf.path, metadata))
         
-    def on_fileView_startEdit(self, mi, all=False):
+    def edit_all(self, mi, all=False):
         """Open file dialog."""
         items = [self.filemodel.itemFromIndex(m) for m in self.ui.fileView.selectedIndexes()]
         d = MyDialog(*items)
         result = d.exec_()
         if result:
             self.filemodel.rebuild()
+
+    def edit_one_by_one(self):
+        items = [self.filemodel.itemFromIndex(m) for m in self.ui.fileView.selectedIndexes()]
+        for i in items:
+            d = MyDialog(i)
+            d.exec_()
+        self.filemodel.rebuild()
 
     def on_lineEdit_textChanged(self, s):
         """Check if current string calls for a new search.
@@ -304,8 +334,8 @@ class MyWindow(QtGui.QMainWindow):
     def on_open_with(self):
         #TODO
         pgm = self.sender().text()
-        QtCore.QProcess.startDetached(pgm)
-        print "openwith"
+        file = self.filemodel.pathFromIndex(self.ui.fileView.currentIndex())
+        utils.open_with(pgm, file)
 
     def on_open_copy_with(self):
         #TODO

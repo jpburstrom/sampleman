@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>647</width>
-    <height>562</height>
+    <width>579</width>
+    <height>671</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Sampleman</string>
@@ -24,10 +30,13 @@
        <set>QAbstractItemView::NoEditTriggers</set>
       </property>
       <property name="dragEnabled">
-       <bool>true</bool>
+       <bool>false</bool>
       </property>
       <property name="dragDropMode">
        <enum>QAbstractItemView::DragOnly</enum>
+      </property>
+      <property name="defaultDropAction">
+       <enum>Qt::CopyAction</enum>
       </property>
       <property name="alternatingRowColors">
        <bool>true</bool>
@@ -69,14 +78,10 @@
         </widget>
        </item>
        <item>
-        <widget class="Phonon::SeekSlider" name="seekSlider_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
+        <widget class="Phonon::SeekSlider" name="seekSlider_2" native="true"/>
        </item>
        <item>
-        <widget class="Phonon::VolumeSlider" name="volumeSlider_2"/>
+        <widget class="Phonon::VolumeSlider" name="volumeSlider_2" native="true"/>
        </item>
       </layout>
      </widget>
@@ -88,7 +93,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>647</width>
+     <width>579</width>
      <height>22</height>
     </rect>
    </property>
@@ -111,10 +116,13 @@
       <string>Export as</string>
      </property>
     </widget>
+    <addaction name="actionStack"/>
     <addaction name="menuOpen_with"/>
     <addaction name="menuOpen_copy_with"/>
     <addaction name="menuExport_as"/>
     <addaction name="actionPlay"/>
+    <addaction name="separator"/>
+    <addaction name="actionQuit_2"/>
    </widget>
    <widget class="QMenu" name="menuLibrary">
     <property name="title">
@@ -128,31 +136,52 @@
      <addaction name="separator"/>
     </widget>
     <addaction name="menuRescan_folders"/>
-    <addaction name="actionManage_folders"/>
-   </widget>
-   <widget class="QMenu" name="menuTags">
-    <property name="title">
-     <string>Meta</string>
-    </property>
-    <addaction name="actionEdit_all"/>
-    <addaction name="actionEdit_one_by_one"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
      <string>View</string>
     </property>
     <addaction name="actionShow_file_info"/>
-    <addaction name="actionShow_seek_slider"/>
+    <addaction name="actionLocation"/>
     <addaction name="actionShow_volume"/>
     <addaction name="actionShow_tags"/>
+    <addaction name="actionShow_stack"/>
+    <addaction name="actionProject"/>
    </widget>
-   <addaction name="menuLibrary"/>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionEdit_all"/>
+    <addaction name="actionEdit_one_by_one"/>
+    <addaction name="separator"/>
+    <addaction name="actionPreferences"/>
+   </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuTags"/>
+   <addaction name="menuEdit"/>
+   <addaction name="menuLibrary"/>
    <addaction name="menuView"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="dockWidget_2">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>150</width>
+     <height>242</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>150</width>
+     <height>385</height>
+    </size>
+   </property>
    <property name="features">
     <set>QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetMovable</set>
    </property>
@@ -166,6 +195,12 @@
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <widget class="QListView" name="tagView">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
+         <horstretch>60</horstretch>
+         <verstretch>100</verstretch>
+        </sizepolicy>
+       </property>
        <property name="editTriggers">
         <set>QAbstractItemView::NoEditTriggers</set>
        </property>
@@ -180,6 +215,97 @@
     </layout>
    </widget>
   </widget>
+  <widget class="QDockWidget" name="dockWidget">
+   <property name="features">
+    <set>QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="windowTitle">
+    <string>Stack</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="0" colspan="3">
+      <widget class="QListView" name="stack">
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <property name="dragEnabled">
+        <bool>false</bool>
+       </property>
+       <property name="dragDropMode">
+        <enum>QAbstractItemView::DragOnly</enum>
+       </property>
+       <property name="defaultDropAction">
+        <enum>Qt::CopyAction</enum>
+       </property>
+       <property name="alternatingRowColors">
+        <bool>true</bool>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::ExtendedSelection</enum>
+       </property>
+       <property name="selectionBehavior">
+        <enum>QAbstractItemView::SelectItems</enum>
+       </property>
+       <property name="layoutMode">
+        <enum>QListView::Batched</enum>
+       </property>
+       <property name="batchSize">
+        <number>30</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="1" column="2">
+      <widget class="QPushButton" name="pushButton">
+       <property name="text">
+        <string>Clear</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QPushButton" name="pushButton_2">
+       <property name="text">
+        <string>Delete</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget_3">
+   <property name="features">
+    <set>QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="windowTitle">
+    <string>Project</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_3">
+    <layout class="QVBoxLayout" name="verticalLayout_3">
+     <item>
+      <widget class="QComboBox" name="comboBox"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="actionQuit">
    <property name="text">
     <string>Close</string>
@@ -190,29 +316,28 @@
     <string>Test</string>
    </property>
   </action>
-  <action name="actionManage_directories">
-   <property name="text">
-    <string>Setup folders</string>
-   </property>
-  </action>
   <action name="actionAll_folders">
    <property name="text">
     <string>All folders</string>
    </property>
-  </action>
-  <action name="actionManage_folders">
-   <property name="text">
-    <string>Manage repos</string>
+   <property name="shortcut">
+    <string>Ctrl+Alt+R</string>
    </property>
   </action>
   <action name="actionEdit_all">
    <property name="text">
     <string>Edit all</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
   </action>
   <action name="actionEdit_one_by_one">
    <property name="text">
     <string>Edit one by one</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+E</string>
    </property>
   </action>
   <action name="actionPlay">
@@ -237,10 +362,10 @@
     <string>File Info</string>
    </property>
    <property name="shortcut">
-    <string>I</string>
+    <string>Ctrl+I</string>
    </property>
   </action>
-  <action name="actionShow_seek_slider">
+  <action name="actionLocation">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -248,10 +373,13 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Position</string>
+    <string>Location</string>
+   </property>
+   <property name="toolTip">
+    <string>Location</string>
    </property>
    <property name="shortcut">
-    <string>P</string>
+    <string>Ctrl+L</string>
    </property>
   </action>
   <action name="actionShow_volume">
@@ -265,7 +393,7 @@
     <string>Volume</string>
    </property>
    <property name="shortcut">
-    <string>V</string>
+    <string>Ctrl+V</string>
    </property>
   </action>
   <action name="actionShow_tags">
@@ -279,7 +407,63 @@
     <string>Tags</string>
    </property>
    <property name="shortcut">
-    <string>T</string>
+    <string>Ctrl+T</string>
+   </property>
+  </action>
+  <action name="actionShow_stack">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Stack</string>
+   </property>
+   <property name="toolTip">
+    <string>Show Stack</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+B</string>
+   </property>
+  </action>
+  <action name="actionStack">
+   <property name="icon">
+    <iconset resource="sampleman.qrc">
+     <normaloff>:/ft/icons/_blank.png</normaloff>:/ft/icons/_blank.png</iconset>
+   </property>
+   <property name="text">
+    <string>Stack</string>
+   </property>
+   <property name="toolTip">
+    <string>Stack selected files</string>
+   </property>
+   <property name="shortcut">
+    <string>S</string>
+   </property>
+  </action>
+  <action name="actionProject">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>Preferences</string>
+   </property>
+  </action>
+  <action name="actionQuit_2">
+   <property name="text">
+    <string>Quit</string>
    </property>
   </action>
  </widget>
@@ -295,7 +479,9 @@
    <header location="global">phonon/volumeslider.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="sampleman.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>actionShow_file_info</sender>
@@ -314,7 +500,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionShow_seek_slider</sender>
+   <sender>actionLocation</sender>
    <signal>toggled(bool)</signal>
    <receiver>seekSlider_2</receiver>
    <slot>setVisible(bool)</slot>
@@ -358,6 +544,22 @@
     <hint type="destinationlabel">
      <x>177</x>
      <y>500</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionShow_stack</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>dockWidget</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>506</x>
+     <y>475</y>
     </hint>
    </hints>
   </connection>

@@ -23,8 +23,6 @@ def scan(root):
     root = os.path.abspath(root)
     for path, dirs, files in os.walk(root):
         np = os.path.relpath(path, root)
-        yield [os.path.join(np, f) for f in files if "audio" == mimetypes.guess_type(f)[0][:5]]
+        yield [os.path.join(np, f) for f in files if mimetypes.guess_type(f)[0] and "audio" == mimetypes.guess_type(f)[0][:5]]
         
     
-#for i in scan("/Users/johannes/samples/misc"):
-#    print i

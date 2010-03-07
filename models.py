@@ -35,6 +35,7 @@ def get_by_or_init(cls, if_new_set={}, **params):
 Entity.get_by_or_init = classmethod(get_by_or_init)
 
 class Soundfile(Entity):
+    """Database model representing a single soundfile."""
 
     file_path = Field(Unicode(255),required=True, primary_key=True)
     repo = ManyToOne("Repo", primary_key=True)
@@ -57,6 +58,9 @@ class Soundfile(Entity):
     tags = ManyToMany("Tag")
 
     def get_audiodata_from_file(self):
+        """Analyze audio data.
+
+        A quite dirty method, mostly using audiolab Sndfile."""
         ext = os.path.splitext(self.path)[1].lower()
         if ext == ".wv":
             with open(self.path, "r") as f:
@@ -100,13 +104,20 @@ class Soundfile(Entity):
                 return False
 
 
+
     def get_hash_from_file(self):
+        """Calculate and set md5 hash from path."""
         self.hash = utils.md5sum(self.path)
 
     def get_lmdate_from_file(self):
+        """Set last modified time from path."""
         self.mtime = datetime.datetime.fromtimestamp(os.path.getmtime(self.path))
 
     def get_data_from_file(self):
+        """Get all data from file.
+
+        Return true if file is audio file, otherwise return false.
+        """
         if self.get_audiodata_from_file():
             self.get_lmdate_from_file()
             self.get_hash_from_file()
@@ -114,17 +125,22 @@ class Soundfile(Entity):
         else:
             return False
     
-    def add_tags(self, *tags):
-        ot = [t.name for t in self.tags]
-        nt = [t for t in tags if t not in ot]
-        [self.tags.append(Tag.get_by_or_init(name=t)) for t in nt]
+    #Not used?    
+    #def add_tags(self, *tags):
+    #   """Add tags to soundfile model.
+
+    #   Args: tags to add.
+    #   """
+    #   ot = [t.name for t in self.tags]
+    #   nt = [t for t in tags if t not in ot]
+    #   [self.tags.append(Tag.get_by_or_init(name=t)) for t in nt]
 
     def get_taglist(self):
-        """Property getter: set tags as list"""
+        """Property getter: get tags as list."""
         return [t.name for t in self.tags]
 
     def set_taglist(self, tags):
-        """Property setter: set tags as list"""
+        """Property setter: set tags as list-"""
         tl = self.taglist
         [self.tags.remove(Tag.get_by_or_init(name=t)) for t in tl if t not in tags]
         [self.tags.append(Tag.get_by_or_init(name=t)) for t in tags if t and t not in tl]
@@ -142,7 +158,7 @@ class Soundfile(Entity):
     tagstring = property(get_tagstring, set_tagstring)
 
     def get_path(self):
-        """Path propery getter"""
+        """Path propery getter."""
         return os.path.join(self.repo.path, self.file_path)
 
     path = property(get_path)
@@ -152,10 +168,8 @@ class Soundfile(Entity):
         r = Repo.get_by(path=root)
         return cls.get_by(repo=r, file_path=path)
 
-
-
-
 class Tag(Entity):
+    """Database model representing a tag."""
 
     name = Field(Unicode,required=True, unique=True)
     files = ManyToMany("Soundfile", inverse="tags")
@@ -164,6 +178,9 @@ class Tag(Entity):
         return "Tag: "+self.name
 
 class Repo(Entity):
+    """Database model representing a repository.
+    
+    A repository is a directory that is searched recursively for soundfiles."""
 
     path = Field(Unicode(255), required=True)
     altpath1 = Field(Unicode(255))
@@ -172,23 +189,72 @@ class Repo(Entity):
     files = OneToMany("Soundfile", inverse="repo", cascade="all, delete-orphan")
 
 class SoundfileStandardItem(QtGui.QStandardItem):
+    """Representing a soundfile inside the SoundfileModel.
 
-    def __init__(self, repo, *args):
+    Keeps track of repository path as well as the relative
+    path of the soundfile."""
+
+    def __init__(self, repo, ft, *args):
         QtGui.QStandardItem.__init__(self, *args)
 
         self.repoRole = QtCore.Qt.UserRole + 1
+        self.ft = ft
         self.repoData = QtCore.QVariant(repo)
 
     def data(self, role=QtCore.Qt.DisplayRole):
+        """Supply data for the model.
+        """
+
         if role == self.repoRole:
             return self.repoData
+        elif role == QtCore.Qt.DecorationRole:
+            return QtGui.QIcon(u":/ft/icons/{0}.png".format(self.ft))
         else:
             return QtGui.QStandardItem.data(self, role)
 
-class SoundfileModel(QtGui.QStandardItemModel):
+    def clone(self):
+        return SoundfileStandardItem(self.repoData.toString(), self.ft, self.data().toString())
 
+class SimpleFileModel(QtGui.QStandardItemModel):
+    """Drag drop model."""
     def __init__(self, *args):
         QtGui.QStandardItemModel.__init__(self, *args)
+
+    def flags(self, mi):
+        """Set flags for drag and drop."""
+        defaultFlags = QtGui.QStandardItemModel.flags(self, mi)
+        if (mi.isValid()) and mi.column() is 0 :
+            return QtCore.Qt.ItemIsDragEnabled | defaultFlags
+        else:
+            return defaultFlags & QtCore.Qt.ItemIsDragEnabled
+
+    def supportedDropActions(self):
+        """Return drag action.
+        
+        We need this not to accidentally move files."""
+        
+        return QtCore.Qt.CopyAction
+
+    def mimeData(self, mi):
+        """Mime data for DnD."""
+        urls = None
+        urls = [QtCore.QUrl(self.pathFromIndex(m)) for m in mi]
+        mime = QtCore.QMimeData()
+        mime.setUrls(urls)
+        return mime
+
+    def pathFromIndex(self, mi):
+        """Get full file path from QModelIndex."""
+        item = self.itemFromIndex(mi)
+        repo = unicode(item.data(item.repoRole).toString())
+        path = unicode(item.data().toString())
+        return os.path.join(repo, path)
+    
+class SoundfileModel(SimpleFileModel):
+    """Soundfile list model."""
+
+    def __init__(self, *args):
+        SimpleFileModel.__init__(self, *args)
 
         self.searchterms = None
         self.rebuild()
@@ -200,11 +266,14 @@ class SoundfileModel(QtGui.QStandardItemModel):
         #print item.text()
 
     def search(self, terms=None, force=False):
+        """Search soundfiles.
+
+        terms -- search terms, comma separated. See _search_sounds method.
+        force -- force a search, even if terms are the same.
+        """
         if terms == self.searchterms and not force:
             return
         self.clear()
-        #self.setHorizontalHeaderLabels((  "File", "Repo","Last modified", "Description", "Tags", "Format", 
-        #        "Samplerate", "Channels", "Length" ))
         self.searchterms = terms
         if not terms:
             self._build(Soundfile.query.filter_by(active=True).all())
@@ -212,52 +281,44 @@ class SoundfileModel(QtGui.QStandardItemModel):
             self._build(self._search_sounds(*terms))
 
     def rebuild(self):
+        """Force a rebuild of current search."""
         self.search(self.searchterms, True)
 
-    def flags(self, mi):
-        defaultFlags = QtGui.QStandardItemModel.flags(self, mi)
-        if (mi.isValid()) and mi.column() is 0 :
-            return QtCore.Qt.ItemIsDragEnabled | defaultFlags
-        else:
-            return defaultFlags & QtCore.Qt.ItemIsDragEnabled
-    
-    def pathFromIndex(self, mi):
-        item = self.itemFromIndex(mi)
-        repo = unicode(item.data(item.repoRole).toString())
-        path = unicode(item.data().toString())
-        return os.path.join(repo, path)
-
     def soundfileFromIndex(self, mi):
+        """Get Soundfile model from QModelIndex."""
         item = self.itemFromIndex(mi)
         repo = unicode(item.data(item.repoRole).toString())
         path = unicode(item.data().toString())
         return Soundfile.get_from_paths(repo, path)
 
     def _build(self, all):
-        [self.appendRow(SoundfileStandardItem(t.repo.path, unicode(t.file_path))) for t in all]
+        """Build the list of soundfiles.
+
+        all -- list of Soundfile instances."""
+        [self.appendRow(SoundfileStandardItem(t.repo.path, t.file_format, unicode(t.file_path))) for t in all]
     
     def _search_sounds(self, *terms):
         """Search for soundfiles.
-        terms: List of search terms
-        all: If True, also search among inactive sounds
+        
+        Accepts variable number of arguments, each being a single search term ANDed
+        to get a search result.
 
         Terms examples:
         (foo, fum): Search files for content in tags, filename and description
         (desc=Blah,): Search files with description containing "Blah"
         (f=wav,): Search files in wav format
 
-        All terms except tags are prepended with "label=", like this:
+        Terms can be specified with "label=", like this:
+        tag/t = tag
+        name/n = filename
         desc/d = Description
         channels/c = Channels
         file_format/f = File format
         encoding/e = Encoding
         samplerate/s = Samplerate
-        tag/t = tag
-        name/n = filename
-
-        More search terms to come, if needed...
         """
         join = False
+        #XXX active=True?
         q = Soundfile.query.filter_by(active=True)
         for t in terms:
             if not t:
@@ -267,13 +328,16 @@ class SoundfileModel(QtGui.QStandardItemModel):
                 #FIXME: name & tag (& desc) i fritextsök, specificera med prefix.
                 #TODO: For later: user settings for free search.
                 #TODO: Here, the searches are ANDed. Would be good to have an OR as well.
-                q = q.join("tags", aliased=True).filter(
-                            #Soundfile.file_path.like(u"%{0}%".format(t[0])),
-                            Tag.name==t[0].lower()
-                            )
+                st = t[0].lower()
+                q = q.outerjoin("tags", aliased=True).filter(or_(
+                    Tag.name == st,
+                    Soundfile.desc.like(u"%{0}%".format(st)),
+                    Soundfile.file_path.like(u"%{0}%".format(st))
+                    ))
+            elif t[0].lower() in ("tag", "t") :
+                q = q.join("tags", aliased=True).filter(Tag.name==t[1].lower())
             elif t[0].lower() in ("name", "n") :
                 q = q.filter(Soundfile.file_path.like(u"%{0}%".format(t[1])))
-            elif t[0].lower() in ("desc", "d") :
                 q = q.filter(Soundfile.desc.like(u"%{0}%".format(t[1])))
             elif t[0].lower() in ("channels", "c"):
                 q = q.filter(Soundfile.channels==int(t[1]))
@@ -285,21 +349,16 @@ class SoundfileModel(QtGui.QStandardItemModel):
                 q = q.filter(Soundfile.samplerate==int(t[1]))
         return q.all()
 
-    def mimeData(self, mi):
-        urls = None
-        urls = [QtCore.QUrl(m.data().toString()) for m in mi if m.column() is 0]
-        mime = QtCore.QMimeData()
-        mime.setUrls(urls)
-        return mime
-
-
 class TagModel(QtGui.QStandardItemModel):
+    """Tag list model."""
+
     def __init__(self, *args):
         QtGui.QStandardItemModel.__init__(self, *args)
         
         self.reload()
 
     def reload(self):
+        """Reload list of tags."""
         self.clear()
         for t in Tag.query.all():
             self.appendRow(QtGui.QStandardItem(t.name.capitalize()))
@@ -317,7 +376,10 @@ class RepoModel(QtGui.QStandardItemModel):
 
         """
         for t in Repo.query.all():
-            self.appendRow((QtGui.QStandardItem(t.path), QtGui.QStandardItem(), QtGui.QStandardItem()))
+            self.appendRow((QtGui.QStandardItem(t.path), 
+                QtGui.QStandardItem(t.altpath1), 
+                QtGui.QStandardItem(t.altpath2), 
+                QtGui.QStandardItem(t.altpath3)))
 
     def add_repo(self, path):
         """Add repository to database.
@@ -340,11 +402,8 @@ class RepoModel(QtGui.QStandardItemModel):
         """Delete repository including soundfiles from database.
         
         """
-        #[session.delete(sf) for sf in Soundfile.query.join("repo").filter(Repo.path == path).all()]
         session.delete(Repo.query.filter_by(path=path).one())
-        #FIXME get model index and remove corresponding row in treeeeeeeVieeeeeew.
-        #self.removeRow(mi.row())
-        #XXX session.commit()
+        session.commit()
 
     def edit_repo(self, oldpath, newpath, col=0):
         """Edit repository path.
@@ -362,19 +421,32 @@ class RepoModel(QtGui.QStandardItemModel):
         """
         path = repo.path
         files = []
-        for sf in Soundfile.query.join("repo").filter(Repo.path == path).all():
+        s = Soundfile.query.join("repo").filter(Repo.path == path)
+        length = s.count()
+        for sf in s.all():
             if not os.path.exists(sf.path):
                 sf.active = False
                 continue
             files.append(sf.path)
+        print length
+        progress = QtGui.QProgressDialog(u"Rebuilding {0}".format(path), u"Cancel", 0, length, QtGui.qApp.activeWindow()) 
+        progress.setWindowModality(QtCore.Qt.WindowModal)
+        import random
+        i = 0
         if not rescan:
             for lis in filesys.scan(path):
                 [Soundfile.get_by_or_init(
                     repo=repo, file_path=p).get_data_from_file() for p in lis if p not in files]
+                i += len(lis)
+                progress.setValue(i)
         else:
             for lis in filesys.scan(path):
                 [Soundfile.get_by_or_init(
                     repo=repo, file_path=p).get_data_from_file() for p in lis]
+                i += len(lis)
+                progress.setValue(i)
+        progress.setValue(length)
+        progress.hide()
         session.commit()
 
             
